@@ -149,6 +149,10 @@ input, select, textarea {
   font-size: 13px;
   font-family: inherit;
 }
+input[data-vacio-bd], select[data-vacio-bd], textarea[data-vacio-bd] {
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+}
 .radio-group { display: flex; gap: 16px; margin-bottom: 12px; font-size: 13px; }
 .radio-group label { flex-direction: row; align-items: center; gap: 6px; }
 

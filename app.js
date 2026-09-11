@@ -80,7 +80,7 @@ async function obtenerInventarioCompleto() {
     .from("inventory")
     .select(`
       id, quantity, location, min_stock, max_stock,
-      inventory_items ( id, sku, name, category, supplier, price, cost )
+      inventory_items ( id, sku, name, description, category, supplier, price, cost, weight, length, width, height )
     `);
 
   if (error) {
@@ -271,6 +271,11 @@ async function abrirModalArticulo(inventoryId) {
     document.getElementById("art-name").value = fila.inventory_items.name;
     document.getElementById("art-category").value = fila.inventory_items.category || "";
     document.getElementById("art-supplier").value = fila.inventory_items.supplier || "";
+    document.getElementById("art-description").value = fila.inventory_items.description || "";
+    document.getElementById("art-weight").value = fila.inventory_items.weight || "";
+    document.getElementById("art-length").value = fila.inventory_items.length || "";
+    document.getElementById("art-width").value = fila.inventory_items.width || "";
+    document.getElementById("art-height").value = fila.inventory_items.height || "";
     document.getElementById("art-price").value = fila.inventory_items.price || "";
     document.getElementById("art-cost").value = fila.inventory_items.cost || "";
     document.getElementById("art-quantity").value = fila.quantity;
