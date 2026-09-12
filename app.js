@@ -45,6 +45,7 @@ function mostrarErrorFormulario(idDiv, mensaje) {
 // --------------------------------------------------------------
 function interpretarErrorSupabase(error) {
   if (!error) return "Ocurrió un error inesperado.";
+  if (error.code === "23505" && error.message?.includes("posicion")) return "Esa posición del almacén ya está ocupada por otro artículo. Elige otra.";
   if (error.code === "23505") return "Ya existe un artículo con ese SKU.";
   if (error.code === "23503") return "No se puede completar: hay datos relacionados (revisa las referencias).";
   if (error.message?.includes("Failed to fetch")) return "No hay conexión con la base de datos. Revisa tu internet.";
@@ -79,7 +80,7 @@ async function obtenerInventarioCompleto() {
   const { data, error } = await supabaseClient
     .from("inventory")
     .select(`
-      id, quantity, location, min_stock, max_stock,
+      id, quantity, location, min_stock, max_stock, posicion_id,
       inventory_items ( id, sku, name, description, category, supplier, price, cost, weight, length, width, height )
     `);
 
@@ -135,8 +136,12 @@ function renderizarTablaInventario(filas) {
       <td>${item.supplier || "-"}</td>
       <td><span class="badge ${bajo ? "badge-bajo" : "badge-ok"}">${bajo ? "Bajo mínimo" : "Suficiente"}</span></td>
       <td>
-        <button class="btn-icon" data-editar="${f.id}">✏️</button>
-        <button class="btn-icon" data-eliminar="${f.id}">🗑️</button>
+        <button class="btn-icon" data-editar="${f.id}" title="Editar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
+        </button>
+        <button class="btn-icon" data-eliminar="${f.id}" title="Eliminar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -247,9 +252,32 @@ async function cargarMovimientosRecientes() {
   `).join("");
 }
 
-// ============================================================
-// MODAL: CREAR / EDITAR ARTÍCULO
-// ============================================================
+// --------------------------------------------------------------
+// cargarPosicionesDisponibles(posicionActualId)
+// Trae todas las posiciones del almacén y calcula cuáles ya están
+// ocupadas (tienen un inventory.posicion_id apuntándolas), para
+// llenar el <select> del formulario solo con las libres. Si el
+// artículo que se edita ya tenía una posición asignada, esa se
+// incluye igual (para no perderla si no la cambias).
+// --------------------------------------------------------------
+async function cargarPosicionesDisponibles(posicionActualId) {
+  const { data: posiciones } = await supabaseClient
+    .from("posiciones")
+    .select("id, almacen, rack, posicion");
+
+  const { data: ocupadas } = await supabaseClient
+    .from("inventory")
+    .select("posicion_id")
+    .not("posicion_id", "is", null);
+
+  const idsOcupados = new Set((ocupadas || []).map(o => o.posicion_id));
+
+  const select = document.getElementById("art-location");
+  select.innerHTML = (posiciones || [])
+    .filter(p => !idsOcupados.has(p.id) || p.id === posicionActualId)
+    .map(p => `<option value="${p.id}">${p.almacen} - ${p.rack} - ${p.posicion}${p.id === posicionActualId ? " (actual)" : ""}</option>`)
+    .join("");
+}
 
 // --------------------------------------------------------------
 // abrirModalArticulo(inventoryId)
@@ -264,6 +292,7 @@ async function abrirModalArticulo(inventoryId) {
 
   if (inventoryId) {
     const fila = inventarioCache.find(f => f.id === inventoryId);
+    await cargarPosicionesDisponibles(fila.posicion_id);
     document.getElementById("modal-articulo-titulo").textContent = "Editar artículo";
     document.getElementById("art-item-id").value = fila.inventory_items.id;
     document.getElementById("art-inventory-id").value = fila.id;
@@ -279,10 +308,11 @@ async function abrirModalArticulo(inventoryId) {
     document.getElementById("art-price").value = fila.inventory_items.price || "";
     document.getElementById("art-cost").value = fila.inventory_items.cost || "";
     document.getElementById("art-quantity").value = fila.quantity;
-    document.getElementById("art-location").value = fila.location || "";
+    document.getElementById("art-location").value = fila.posicion_id || "";
     document.getElementById("art-min-stock").value = fila.min_stock || "";
     document.getElementById("art-max-stock").value = fila.max_stock || "";
   } else {
+    await cargarPosicionesDisponibles(null);
     document.getElementById("modal-articulo-titulo").textContent = "Nuevo artículo";
     document.getElementById("art-item-id").value = "";
     document.getElementById("art-inventory-id").value = "";
@@ -357,9 +387,14 @@ document.getElementById("form-articulo").addEventListener("submit", async (e) =>
     cost: document.getElementById("art-cost").value || null,
   };
 
+  const posicionSelect = document.getElementById("art-location");
+  const posicionId = posicionSelect.value;
+  const posicionTexto = posicionSelect.options[posicionSelect.selectedIndex]?.text.replace(" (actual)", "") || "";
+
   const datosInventario = {
     quantity: document.getElementById("art-quantity").value,
-    location: document.getElementById("art-location").value,
+    location: posicionTexto,
+    posicion_id: posicionId || null,
     min_stock: document.getElementById("art-min-stock").value || null,
     max_stock: document.getElementById("art-max-stock").value || null,
     updated_at: new Date().toISOString(),
@@ -449,8 +484,12 @@ async function cargarTablaMovimientos() {
       <td><span class="badge badge-${m.status.toLowerCase()}">${m.status}</span></td>
       <td>
         ${m.status === "Pendiente" ? `
-          <button class="btn-icon" data-aprobar="${m.id}">✅</button>
-          <button class="btn-icon" data-rechazar="${m.id}">❌</button>
+          <button class="btn-icon" data-aprobar="${m.id}" title="Aprobar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          </button>
+          <button class="btn-icon" data-rechazar="${m.id}" title="Rechazar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+          </button>
         ` : "-"}
       </td>
     </tr>
