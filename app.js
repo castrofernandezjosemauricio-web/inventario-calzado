@@ -133,7 +133,7 @@ function renderizarTablaInventario(filas) {
       <td>${(item.cost ?? 0).toFixed(2)}</td>
       <td>${(item.price ?? 0).toFixed(2)}</td>
       <td>${item.supplier || "-"}</td>
-      <td><span class="badge ${bajo ? "badge-bajo" : "badge-ok"}">${bajo ? "Bajo" : "OK"}</span></td>
+      <td><span class="badge ${bajo ? "badge-bajo" : "badge-ok"}">${bajo ? "Bajo mínimo" : "Suficiente"}</span></td>
       <td>
         <button class="btn-icon" data-editar="${f.id}">✏️</button>
         <button class="btn-icon" data-eliminar="${f.id}">🗑️</button>
