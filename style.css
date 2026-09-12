@@ -1,24 +1,26 @@
 /* ============================================================
    Almacén Calzado — identidad visual "etiqueta de bodega"
-   Paleta: pizarra oscura + naranja de señalización industrial
+   Modo oscuro: pizarra industrial + naranja de señalización
    Tipografía: sans para UI, monoespaciada para SKUs/códigos
    ============================================================ */
 
 :root {
-  --ink: #10151c;
-  --slate: #1c2531;
-  --slate-light: #2a3441;
-  --paper: #f5f4f0;
-  --paper-dim: #eae8e2;
-  --line: #dcdad2;
+  --bg: #141a22;
+  --surface: #1c2531;
+  --surface-2: #242e3c;
+  --surface-3: #2d3847;
+  --text: #eef1f5;
+  --text-dim: #9aa5b1;
+  --text-mute: #6b7684;
+  --line: #313d4c;
   --safety: #ff6a1f;
-  --safety-dim: #fff1e8;
-  --ok: #1f7a4d;
-  --ok-bg: #e4f5ec;
-  --warn: #b8590a;
-  --warn-bg: #fff0e0;
-  --bad: #b0301f;
-  --bad-bg: #fbe6e2;
+  --safety-dim: rgba(255, 106, 31, 0.12);
+  --ok: #3ecf8e;
+  --ok-bg: rgba(62, 207, 142, 0.12);
+  --warn: #f2a63d;
+  --warn-bg: rgba(242, 166, 61, 0.12);
+  --bad: #f0554a;
+  --bad-bg: rgba(240, 85, 74, 0.12);
   --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   --sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -28,14 +30,14 @@
 body {
   margin: 0;
   font-family: var(--sans);
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* ---------- Topbar ---------- */
 .topbar {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--surface-2);
+  color: var(--text);
   padding: 18px 32px;
   display: flex;
   align-items: center;
@@ -59,7 +61,7 @@ body {
 .tab-btn {
   background: transparent;
   border: 1px solid transparent;
-  color: #9aa5b1;
+  color: var(--text-dim);
   padding: 7px 16px;
   cursor: pointer;
   font-size: 13px;
@@ -67,10 +69,10 @@ body {
   font-weight: 500;
   border-radius: 3px;
 }
-.tab-btn:hover { color: var(--paper); }
+.tab-btn:hover { color: var(--text); }
 .tab-btn.active {
-  background: var(--slate);
-  color: var(--paper);
+  background: var(--surface-3);
+  color: var(--text);
   border-color: var(--safety);
 }
 
@@ -82,20 +84,19 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: var(--ink);
+  background: var(--line);
   margin-bottom: 28px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
 }
 .metric-card {
-  background: var(--paper);
+  background: var(--surface);
   padding: 18px 20px;
-  position: relative;
 }
 .metric-card.warn { background: var(--safety-dim); }
 .metric-label {
   display: block;
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-dim);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -106,11 +107,12 @@ body {
   font-weight: 700;
   font-family: var(--mono);
   letter-spacing: -0.01em;
+  color: var(--text);
 }
 
 /* ---------- Paneles ---------- */
 .panel {
-  background: white;
+  background: var(--surface);
   border: 1px solid var(--line);
   padding: 22px 24px;
   margin-bottom: 24px;
@@ -127,7 +129,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
 }
 .panel-header h2 { margin-bottom: 0; }
 
@@ -141,7 +143,8 @@ body {
 .filters input, .filters select {
   padding: 9px 12px;
   border: 1px solid var(--line);
-  background: var(--paper);
+  background: var(--surface-2);
+  color: var(--text);
   border-radius: 2px;
   font-size: 13px;
   font-family: var(--sans);
@@ -152,15 +155,16 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--safety);
 }
 .filters input { flex: 1; min-width: 200px; }
+.filters input::placeholder { color: var(--text-mute); }
 
 /* ---------- Tabla estilo manifiesto de carga ---------- */
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table th {
   text-align: left;
   padding: 9px 10px;
-  color: var(--paper);
-  background: var(--slate);
-  font-weight: 600;
+  color: var(--bg);
+  background: var(--safety);
+  font-weight: 700;
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -168,9 +172,10 @@ input:focus, select:focus, textarea:focus {
 .data-table td {
   padding: 11px 10px;
   border-bottom: 1px solid var(--line);
+  color: var(--text);
 }
-.data-table tbody tr:hover { background: var(--paper-dim); }
-.data-table td:first-child { font-family: var(--mono); font-size: 12.5px; }
+.data-table tbody tr:hover { background: var(--surface-2); }
+.data-table td:first-child { font-family: var(--mono); font-size: 12.5px; color: var(--text-dim); }
 
 /* ---------- Badges: etiqueta rectangular, no píldora ---------- */
 .badge {
@@ -198,9 +203,9 @@ input:focus, select:focus, textarea:focus {
   border-radius: 2px;
   font-family: var(--sans);
 }
-.btn-primary { background: var(--safety); color: white; }
-.btn-primary:hover { background: #e55a10; }
-.btn-secondary { background: var(--paper-dim); color: var(--ink); }
+.btn-primary { background: var(--safety); color: var(--bg); }
+.btn-primary:hover { background: #ff8447; }
+.btn-secondary { background: var(--surface-3); color: var(--text); }
 .btn-secondary:hover { background: var(--line); }
 
 .btn-icon {
@@ -208,29 +213,35 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--line);
   width: 28px; height: 28px;
   cursor: pointer;
-  font-size: 12px;
   margin-right: 4px;
   border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
 }
-.btn-icon:hover { border-color: var(--ink); }
+.btn-icon:hover { border-color: var(--text); color: var(--text); }
+.btn-icon[data-eliminar]:hover, .btn-icon[data-rechazar]:hover { border-color: var(--bad); color: var(--bad); }
+.btn-icon[data-aprobar]:hover { border-color: var(--ok); color: var(--ok); }
 
 /* ---------- Modales ---------- */
 .modal-overlay {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(16,21,28,0.55);
+  background: rgba(0,0,0,0.65);
   align-items: center;
   justify-content: center;
   z-index: 10;
 }
 .modal-overlay.active { display: flex; }
 .modal {
-  background: white;
+  background: var(--surface);
   border-top: 4px solid var(--safety);
   padding: 26px;
   width: 540px;
   max-height: 85vh;
   overflow-y: auto;
+  color: var(--text);
 }
 .modal h2 {
   margin: 0 0 18px;
@@ -241,7 +252,7 @@ input:focus, select:focus, textarea:focus {
 }
 .modal h3 {
   font-size: 10.5px;
-  color: #6b7280;
+  color: var(--text-dim);
   margin: 18px 0 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -258,7 +269,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   font-size: 11.5px;
-  color: #4b5563;
+  color: var(--text-dim);
   gap: 5px;
   margin-bottom: 6px;
   font-weight: 500;
@@ -266,12 +277,14 @@ input:focus, select:focus, textarea:focus {
 input, select, textarea {
   padding: 9px 10px;
   border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
   border-radius: 2px;
   font-size: 13px;
   font-family: var(--sans);
 }
 .radio-group { display: flex; gap: 18px; margin-bottom: 14px; font-size: 13px; }
-.radio-group label { flex-direction: row; align-items: center; gap: 6px; font-weight: 500; }
+.radio-group label { flex-direction: row; align-items: center; gap: 6px; font-weight: 500; color: var(--text); }
 
 .modal-actions {
   display: flex;
@@ -298,8 +311,8 @@ input, select, textarea {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: var(--ink);
-  color: white;
+  background: var(--surface-3);
+  color: var(--text);
   padding: 12px 18px;
   border-left: 3px solid var(--safety);
   font-size: 13px;
