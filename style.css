@@ -319,8 +319,8 @@ input, select, textarea {
 .legend-swatch {
   width: 11px; height: 11px; border-radius: 2px; display: inline-block;
 }
-.legend-swatch.legend-libre { background: var(--ok-bg); border: 1px solid var(--ok); }
-.legend-swatch.legend-ocupada { background: var(--bad-bg); border: 1px solid var(--bad); }
+.legend-swatch.legend-libre { background: rgba(45, 212, 191, 0.12); border: 1px solid #2dd4bf; }
+.legend-swatch.legend-ocupada { background: rgba(251, 113, 133, 0.14); border: 1px solid #fb7185; }
 
 .mapa-vacio { color: var(--text-mute); font-size: 13px; }
 
@@ -359,8 +359,8 @@ input, select, textarea {
 }
 
 .position-cell {
-  border-left: 3px solid var(--ok);
-  background: var(--ok-bg);
+  border-left: 3px solid #2dd4bf;
+  background: rgba(45, 212, 191, 0.12);
   padding: 8px 10px;
   border-radius: 2px;
   min-height: 46px;
@@ -371,8 +371,8 @@ input, select, textarea {
   cursor: default;
 }
 .position-cell.ocupada {
-  border-color: var(--bad);
-  background: var(--bad-bg);
+  border-color: #fb7185;
+  background: rgba(251, 113, 133, 0.14);
 }
 
 .position-code {
