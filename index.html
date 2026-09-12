@@ -12,6 +12,7 @@
   <nav class="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="movimientos">Movimientos</button>
+    <button class="tab-btn" data-tab="almacen">Almacén</button>
   </nav>
 </header>
 
@@ -100,6 +101,40 @@
       </thead>
       <tbody></tbody>
     </table>
+  </section>
+</main>
+
+<!-- ============================================================ -->
+<!-- VISTA: ALMACÉN (mapa de racks y posiciones)                   -->
+<!-- ============================================================ -->
+<main id="view-almacen" class="view">
+
+  <section class="metrics metrics-3">
+    <div class="metric-card">
+      <span class="metric-label">Posiciones totales</span>
+      <span class="metric-value" id="m-pos-total">-</span>
+    </div>
+    <div class="metric-card bad">
+      <span class="metric-label">Posiciones ocupadas</span>
+      <span class="metric-value" id="m-pos-ocupadas">-</span>
+    </div>
+    <div class="metric-card ok">
+      <span class="metric-label">Posiciones libres</span>
+      <span class="metric-value" id="m-pos-libres">-</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <h2>Mapa del almacén</h2>
+      <div class="rack-legend">
+        <span class="legend-item"><span class="legend-swatch legend-libre"></span> Libre</span>
+        <span class="legend-item"><span class="legend-swatch legend-ocupada"></span> Ocupada</span>
+      </div>
+    </div>
+    <div id="mapa-almacen" class="mapa-almacen">
+      <p class="mapa-vacio">Cargando posiciones...</p>
+    </div>
   </section>
 </main>
 

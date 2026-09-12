@@ -306,6 +306,90 @@ input, select, textarea {
 }
 .form-error.active { display: block; }
 
+/* ---------- Mapa de almacén ---------- */
+.metrics-3 { grid-template-columns: repeat(3, 1fr); }
+.metric-card.bad { background: var(--bad-bg); }
+.metric-card.ok { background: var(--ok-bg); }
+
+.rack-legend { display: flex; gap: 16px; }
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--text-dim);
+}
+.legend-swatch {
+  width: 11px; height: 11px; border-radius: 2px; display: inline-block;
+}
+.legend-swatch.legend-libre { background: var(--ok-bg); border: 1px solid var(--ok); }
+.legend-swatch.legend-ocupada { background: var(--bad-bg); border: 1px solid var(--bad); }
+
+.mapa-vacio { color: var(--text-mute); font-size: 13px; }
+
+.almacen-bloque { margin-bottom: 26px; }
+.almacen-bloque:last-child { margin-bottom: 0; }
+
+.almacen-titulo {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.almacen-titulo::before { content: "▣ "; color: var(--safety); }
+
+.rack-grupo { margin-bottom: 16px; }
+.rack-grupo:last-child { margin-bottom: 0; }
+
+.rack-titulo {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+}
+
+.position-cell {
+  border-left: 3px solid var(--ok);
+  background: var(--ok-bg);
+  padding: 8px 10px;
+  border-radius: 2px;
+  min-height: 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  cursor: default;
+}
+.position-cell.ocupada {
+  border-color: var(--bad);
+  background: var(--bad-bg);
+}
+
+.position-code {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.position-info {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.position-info.libre-texto { color: var(--text-mute); font-style: italic; }
+
 /* ---------- Toast ---------- */
 .toast {
   position: fixed;

@@ -65,6 +65,9 @@ function cambiarTab(nombre) {
   document.querySelectorAll(".view").forEach(v => {
     v.classList.toggle("active", v.id === "view-" + nombre);
   });
+  // el panel de almacén se recarga cada vez que se entra, para
+  // reflejar posiciones recién asignadas/liberadas desde el modal de artículo
+  if (nombre === "almacen") cargarPanelAlmacen();
 }
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => cambiarTab(btn.dataset.tab));
@@ -277,6 +280,105 @@ async function cargarPosicionesDisponibles(posicionActualId) {
     .filter(p => !idsOcupados.has(p.id) || p.id === posicionActualId)
     .map(p => `<option value="${p.id}">${p.almacen} - ${p.rack} - ${p.posicion}${p.id === posicionActualId ? " (actual)" : ""}</option>`)
     .join("");
+}
+
+// --------------------------------------------------------------
+// cargarPanelAlmacen()
+// Trae TODAS las posiciones del almacén y las cruza con inventory
+// (por posicion_id) para saber cuáles están ocupadas y por qué
+// artículo. Arma un mapa visual agrupado por almacén -> rack,
+// mostrando cada posición como libre u ocupada. Actualiza también
+// las 3 métricas de ocupación (total / ocupadas / libres).
+// --------------------------------------------------------------
+async function cargarPanelAlmacen() {
+  const cont = document.getElementById("mapa-almacen");
+
+  const { data: posiciones, error: e1 } = await supabaseClient
+    .from("posiciones")
+    .select("id, almacen, rack, posicion");
+
+  const { data: ocupacion, error: e2 } = await supabaseClient
+    .from("inventory")
+    .select("posicion_id, quantity, inventory_items ( sku, name )")
+    .not("posicion_id", "is", null);
+
+  if (e1 || e2) {
+    console.error("Error cargando panel de almacén:", e1 || e2);
+    cont.innerHTML = `<p class="mapa-vacio">No se pudo cargar el mapa del almacén.</p>`;
+    return;
+  }
+
+  // mapa posicion_id -> quién la ocupa, para consultarlo O(1) al pintar cada celda
+  const ocupadaPor = new Map();
+  (ocupacion || []).forEach(o => {
+    ocupadaPor.set(o.posicion_id, {
+      sku: o.inventory_items?.sku || "-",
+      name: o.inventory_items?.name || "-",
+      quantity: o.quantity,
+    });
+  });
+
+  // métricas de ocupación
+  const total = (posiciones || []).length;
+  const ocupadas = (posiciones || []).filter(p => ocupadaPor.has(p.id)).length;
+  document.getElementById("m-pos-total").textContent = total;
+  document.getElementById("m-pos-ocupadas").textContent = ocupadas;
+  document.getElementById("m-pos-libres").textContent = total - ocupadas;
+
+  if (!total) {
+    cont.innerHTML = `<p class="mapa-vacio">Todavía no hay posiciones registradas en la tabla "posiciones".</p>`;
+    return;
+  }
+
+  // agrupa por almacén, y dentro de cada almacén por rack, ordenando
+  // naturalmente para que A-01, A-02, A-10 queden en orden lógico
+  const collator = new Intl.Collator("es", { numeric: true, sensitivity: "base" });
+  const porAlmacen = new Map();
+  posiciones.forEach(p => {
+    if (!porAlmacen.has(p.almacen)) porAlmacen.set(p.almacen, new Map());
+    const racks = porAlmacen.get(p.almacen);
+    if (!racks.has(p.rack)) racks.set(p.rack, []);
+    racks.get(p.rack).push(p);
+  });
+
+  const almacenesOrdenados = [...porAlmacen.keys()].sort(collator.compare);
+
+  cont.innerHTML = almacenesOrdenados.map(almacen => {
+    const racks = porAlmacen.get(almacen);
+    const racksOrdenados = [...racks.keys()].sort(collator.compare);
+
+    const bloquesRack = racksOrdenados.map(rack => {
+      const posicionesRack = racks.get(rack).sort((a, b) => collator.compare(a.posicion, b.posicion));
+
+      const celdas = posicionesRack.map(p => {
+        const ocupante = ocupadaPor.get(p.id);
+        if (ocupante) {
+          return `
+            <div class="position-cell ocupada" title="${ocupante.name} (${ocupante.sku}) - Cant: ${ocupante.quantity}">
+              <span class="position-code">${p.posicion}</span>
+              <span class="position-info">${ocupante.sku}</span>
+            </div>`;
+        }
+        return `
+          <div class="position-cell" title="Posición libre">
+            <span class="position-code">${p.posicion}</span>
+            <span class="position-info libre-texto">Libre</span>
+          </div>`;
+      }).join("");
+
+      return `
+        <div class="rack-grupo">
+          <h4 class="rack-titulo">${rack}</h4>
+          <div class="position-grid">${celdas}</div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="almacen-bloque">
+        <h3 class="almacen-titulo">${almacen}</h3>
+        ${bloquesRack}
+      </div>`;
+  }).join("");
 }
 
 // --------------------------------------------------------------
