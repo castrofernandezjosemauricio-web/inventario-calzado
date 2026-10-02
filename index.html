@@ -9,11 +9,16 @@
 
 <header class="topbar">
   <h1>Almacén Calzado</h1>
+
   <nav class="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="movimientos">Movimientos</button>
     <button class="tab-btn" data-tab="almacen">Almacén</button>
   </nav>
+
+  <button id="btn-cerrar-sesion" class="btn-secondary">
+    Cerrar sesión
+  </button>
 </header>
 
 <!-- ============================================================ -->
@@ -21,7 +26,6 @@
 <!-- ============================================================ -->
 <main id="view-dashboard" class="view active">
 
-  <!-- Métricas principales -->
   <section class="metrics">
     <div class="metric-card">
       <span class="metric-label">Total artículos</span>
@@ -41,7 +45,6 @@
     </div>
   </section>
 
-  <!-- Movimientos recientes -->
   <section class="panel">
     <h2>Movimientos recientes</h2>
     <table class="data-table" id="tabla-recientes">
@@ -52,7 +55,6 @@
     </table>
   </section>
 
-  <!-- Filtros + tabla principal -->
   <section class="panel">
     <div class="panel-header">
       <h2>Inventario</h2>
@@ -105,7 +107,7 @@
 </main>
 
 <!-- ============================================================ -->
-<!-- VISTA: ALMACÉN (mapa de racks y posiciones)                   -->
+<!-- VISTA: ALMACÉN                                                -->
 <!-- ============================================================ -->
 <main id="view-almacen" class="view">
 
@@ -132,6 +134,7 @@
         <span class="legend-item"><span class="legend-swatch legend-ocupada"></span> Ocupada</span>
       </div>
     </div>
+
     <div id="mapa-almacen" class="mapa-almacen">
       <p class="mapa-vacio">Cargando posiciones...</p>
     </div>
@@ -145,6 +148,7 @@
   <div class="modal">
     <h2 id="modal-articulo-titulo">Nuevo artículo</h2>
     <div class="form-error" id="art-form-error"></div>
+
     <form id="form-articulo">
       <input type="hidden" id="art-item-id">
       <input type="hidden" id="art-inventory-id">
@@ -164,6 +168,7 @@
       </div>
 
       <h3>Inventario</h3>
+
       <div class="form-grid">
         <label>Cantidad <input type="number" id="art-quantity" required></label>
         <label>Posición <select id="art-location" required></select></label>
@@ -186,25 +191,54 @@
   <div class="modal">
     <h2>Nuevo movimiento</h2>
     <div class="form-error" id="mov-form-error"></div>
+
     <form id="form-movimiento">
       <label>Artículo
         <select id="mov-item" required></select>
       </label>
 
       <label>Tipo</label>
+
       <div class="radio-group">
-        <label><input type="radio" name="mov-tipo" value="Entrada" checked> Entrada</label>
-        <label><input type="radio" name="mov-tipo" value="Salida"> Salida</label>
-        <label><input type="radio" name="mov-tipo" value="Ajuste"> Ajuste</label>
+        <label>
+          <input type="radio" name="mov-tipo" value="Entrada" checked>
+          Entrada
+        </label>
+
+        <label>
+          <input type="radio" name="mov-tipo" value="Salida">
+          Salida
+        </label>
+
+        <label>
+          <input type="radio" name="mov-tipo" value="Ajuste">
+          Ajuste
+        </label>
       </div>
 
-      <label>Cantidad <input type="number" id="mov-cantidad" required min="1"></label>
-      <label>Motivo <input type="text" id="mov-motivo"></label>
-      <label>Notas <textarea id="mov-notas"></textarea></label>
+      <label>
+        Cantidad
+        <input type="number" id="mov-cantidad" required min="1">
+      </label>
+
+      <label>
+        Motivo
+        <input type="text" id="mov-motivo">
+      </label>
+
+      <label>
+        Notas
+        <textarea id="mov-notas"></textarea>
+      </label>
 
       <div class="modal-actions">
-        <button type="button" class="btn-secondary" id="btn-cancelar-movimiento">Cancelar</button>
-        <button type="submit" class="btn-primary">Crear movimiento</button>
+        <button type="button" class="btn-secondary" id="btn-cancelar-movimiento">
+          Cancelar
+        </button>
+
+        <button type="submit" class="btn-primary">
+          Crear movimiento
+        </button>
       </div>
     </form>
   </div>
@@ -213,5 +247,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
+

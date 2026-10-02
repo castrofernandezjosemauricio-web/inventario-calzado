@@ -8,6 +8,7 @@
 const SUPABASE_URL = "https://pkojqznqpczyqycsqvtf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_5qr4fN8G45QMCLNzyO8-Vw_iOVcYVFh";
 
-// Crea el cliente de Supabase que se usa en toda la app para
-// hacer consultas (select/insert/update/delete) a las 3 tablas.
+// Cliente de Supabase.
+// La seguridad de las tablas está protegida mediante RLS
+// y las políticas de roles y permisos.
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);

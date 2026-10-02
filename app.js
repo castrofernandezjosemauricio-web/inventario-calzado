@@ -9,6 +9,26 @@
 // y lo oculta solo después de 3 segundos. Se usa para confirmar
 // acciones o avisar de errores de conexión con Supabase.
 // --------------------------------------------------------------
+// --------------------------------------------------------------
+
+
+// verificarSesion()
+// Comprueba que exista un usuario autenticado.
+// Si no hay sesión, devuelve al usuario al login.
+// --------------------------------------------------------------
+async function verificarSesion() {
+  const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+  if (error || !session) {
+    window.location.href = "login.html";
+    return false;
+  }
+
+  return true;
+}
+
+
+
 function mostrarToast(mensaje, tipo = "success") {
   let toast = document.getElementById("toast");
   if (!toast) {
@@ -423,7 +443,17 @@ async function abrirModalArticulo(inventoryId) {
   modal.classList.add("active");
 }
 
-document.getElementById("btn-nuevo-articulo").addEventListener("click", () => abrirModalArticulo(null));
+document.getElementById("btn-nuevo-articulo").addEventListener("click", async () => {
+  const permitido = await tienePermiso("inventario.ajustar");
+
+  if (!permitido) {
+    mostrarToast("No tienes permiso para crear o ajustar artículos", "error");
+    return;
+  }
+
+  abrirModalArticulo(null);
+});
+
 document.getElementById("btn-cancelar-articulo").addEventListener("click", () => {
   document.getElementById("modal-articulo").classList.remove("active");
 });
@@ -463,7 +493,19 @@ function validarFormularioArticulo() {
 // - Cualquier error de Supabase se muestra traducido, sin romper la página
 // --------------------------------------------------------------
 document.getElementById("form-articulo").addEventListener("submit", async (e) => {
+
   e.preventDefault();
+
+  const permitido = await tienePermiso("inventario.ajustar");
+
+  if (!permitido) {
+    mostrarErrorFormulario(
+      "art-form-error",
+      "No tienes permiso para crear o editar artículos."
+    );
+    return;
+  }
+
   mostrarErrorFormulario("art-form-error", null);
 
   const errorValidacion = validarFormularioArticulo();
@@ -535,6 +577,15 @@ document.getElementById("form-articulo").addEventListener("submit", async (e) =>
 // luego el registro de inventario, y al final el artículo del catálogo.
 // --------------------------------------------------------------
 async function eliminarArticulo(inventoryId) {
+    const permitido = await tienePermiso("inventario.ajustar");
+
+  if (!permitido) {
+    mostrarToast(
+      "No tienes permiso para eliminar artículos.",
+      "error"
+    );
+    return;
+  }
   if (!confirm("¿Eliminar este artículo? Esta acción no se puede deshacer.")) return;
 
   const fila = inventarioCache.find(f => f.id === inventoryId);
@@ -612,6 +663,16 @@ async function cargarTablaMovimientos() {
 // de sumar/restar el stock automáticamente si el estado es Aprobado.
 // --------------------------------------------------------------
 async function cambiarEstadoMovimiento(id, nuevoEstado) {
+  const permitido = await tienePermiso("inventario.ajustar");
+
+  if (!permitido) {
+    mostrarToast(
+      "No tienes permiso para aprobar o rechazar movimientos.",
+      "error"
+    );
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("inventory_movements")
     .update({ status: nuevoEstado })
@@ -643,7 +704,17 @@ function abrirModalMovimiento() {
   document.getElementById("modal-movimiento").classList.add("active");
 }
 
-document.getElementById("btn-nuevo-movimiento").addEventListener("click", abrirModalMovimiento);
+document.getElementById("btn-nuevo-movimiento").addEventListener("click", async () => {
+  const permitido = await tienePermiso("inventario.recibir");
+
+  if (!permitido) {
+    mostrarToast("No tienes permiso para registrar movimientos de entrada", "error");
+    return;
+  }
+
+  abrirModalMovimiento();
+});
+
 document.getElementById("btn-cancelar-movimiento").addEventListener("click", () => {
   document.getElementById("modal-movimiento").classList.remove("active");
 });
@@ -661,6 +732,26 @@ document.getElementById("form-movimiento").addEventListener("submit", async (e) 
 
   const inventoryId = document.getElementById("mov-item").value;
   const tipo = document.querySelector('input[name="mov-tipo"]:checked').value;
+
+  let permisoMovimiento = null;
+
+if (tipo === "Entrada") {
+  permisoMovimiento = "inventario.recibir";
+} else if (tipo === "Ajuste") {
+  permisoMovimiento = "inventario.ajustar";
+} else if (tipo === "Salida") {
+  permisoMovimiento = "inventario.ajustar";
+}
+
+const permitido = await tienePermiso(permisoMovimiento);
+
+if (!permitido) {
+  mostrarErrorFormulario(
+    "mov-form-error",
+    "No tienes permiso para registrar este tipo de movimiento."
+  );
+  return;
+}
   const cantidad = Number(document.getElementById("mov-cantidad").value);
 
   if (!inventoryId) {
@@ -702,7 +793,103 @@ document.getElementById("form-movimiento").addEventListener("submit", async (e) 
 });
 
 // ============================================================
-// INICIO: carga todo al abrir la página
+// CERRAR SESIÓN
 // ============================================================
-cargarDashboard();
-cargarTablaMovimientos();
+async function cerrarSesion() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    console.error("Error al cerrar sesión:", error);
+    mostrarToast("No se pudo cerrar la sesión", "error");
+    return;
+  }
+
+  window.location.href = "login.html";
+}
+
+
+// ============================================================
+// BOTÓN CERRAR SESIÓN
+// ============================================================
+const btnCerrarSesion = document.getElementById("btn-cerrar-sesion");
+
+if (btnCerrarSesion) {
+  btnCerrarSesion.addEventListener("click", cerrarSesion);
+}
+
+
+// ============================================================
+// INICIO: verifica sesión y luego carga todo
+// ============================================================
+(async () => {
+  const autenticado = await verificarSesion();
+
+  if (!autenticado) return;
+
+  const rol = await obtenerRolUsuario();
+
+ 
+
+
+  cargarDashboard();
+  cargarTablaMovimientos();
+})();
+
+// --------------------------------------------------------------
+// obtenerRolUsuario()
+// Obtiene el rol del usuario actualmente autenticado.
+// --------------------------------------------------------------
+async function obtenerRolUsuario() {
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    console.error("No se pudo obtener el usuario:", userError);
+    return null;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("usuario_rol")
+    .select(`
+      roles (
+        id,
+        nombre
+      )
+    `)
+    .eq("usuario_id", user.id)
+    .single();
+
+  if (error) {
+    console.error("No se pudo obtener el rol:", error);
+    return null;
+  }
+
+  return data?.roles || null;
+}
+
+// --------------------------------------------------------------
+// tienePermiso()
+// Comprueba si el usuario actual tiene un permiso específico.
+// --------------------------------------------------------------
+async function tienePermiso(nombrePermiso) {
+  const { data: { user }, error: userError } =
+    await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    return false;
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+  "tiene_permiso",
+  {
+    p: nombrePermiso
+  }
+);
+
+  if (error) {
+    console.error("Error al comprobar permiso:", error);
+    return false;
+  }
+
+  return data === true;
+}
